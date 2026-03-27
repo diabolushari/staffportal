@@ -44,8 +44,34 @@ jobs:
       - name: Copy Environment File
         run: cp .env.example .env
 
+      - name: Setup SQLite DB
+        run: |
+          touch database/database.sqlite
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=database/database.sqlite" >> .env
+
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install gRPC PHP plugin
+        run: |
+          sudo apt-get install -y autoconf automake libtool pkg-config cmake git
+          git clone --depth 1 https://github.com/grpc/grpc.git
+          cd grpc
+          git submodule update --init
+          mkdir -p cmake/build
+          cd cmake/build
+          cmake ../.. -DgRPC_BUILD_TESTS=OFF
+          make -j$(nproc) grpc_php_plugin
+          sudo cp grpc_php_plugin /usr/local/bin/
+
       - name: Generate Application Key
         run: php artisan key:generate
+
+      - name: Generate gRPC files
+        run: GRPC_PHP_PLUGIN=/usr/local/bin/grpc_php_plugin bash ./scripts/generate-grpc.sh
 
       - name: Tests
         run: ./vendor/bin/pest
