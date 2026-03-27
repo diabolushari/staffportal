@@ -41,6 +41,12 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      # 7️⃣ RInstall Protoc
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       # 7️⃣ Run your script
       - name: Generate gRPC files
         run: bash ./scripts/generate-grpc.sh
