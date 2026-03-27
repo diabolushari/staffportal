@@ -1,0 +1,60 @@
+name: Staff Portal CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build-and-migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      # 3️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 4️⃣ Install PHP dependencies
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      # 5️⃣ Install Node dependencies
+      - name: Install NPM dependencies
+        run: npm install
+
+      # 6️⃣ Setup Laravel environment
+      - name: Setup .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # 7️⃣ Run your script
+      - name: Generate gRPC files
+        run: bash ./scripts/generate-grpc.sh
+
+      # 8️⃣ Build frontend
+      - name: Build assets
+        run: npm run build
+
+      # 9️⃣ Setup SQLite
+      - name: Setup SQLite DB
+        run: |
+          touch database/database.sqlite
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=database/database.sqlite" >> .env
+
+      # 9️⃣ Run migrations
+      - name: Run migrations
+        run: php artisan migrate --force
