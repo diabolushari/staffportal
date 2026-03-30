@@ -27,14 +27,6 @@ jobs:
         with:
           node-version: '18'
 
-      # 4️⃣ Install PHP dependencies
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      # 5️⃣ Install Node dependencies
-      - name: Install NPM dependencies
-        run: npm install
-
       # 6️⃣ Setup Laravel environment
       - name: Setup .env
         run: |
